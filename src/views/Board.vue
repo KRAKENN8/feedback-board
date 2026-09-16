@@ -14,6 +14,7 @@ const newTitle = ref('')
 const newDescription = ref('')
 const submitting = ref(false)
 const submitError = ref('')
+const voteError = ref('')
 
 async function loadBoard() {
   loading.value = true
@@ -46,6 +47,7 @@ async function toggleVote(item) {
   if (!user.value) return
 
   const existingVoteId = myVoteIds.value[item.id]
+  voteError.value = ''
   try {
     if (existingVoteId) {
       await pb.collection('votes').delete(existingVoteId)
@@ -55,8 +57,19 @@ async function toggleVote(item) {
         user: user.value.id,
       })
     }
+
+    const currentItem = await pb.collection('feedback_items').getOne(item.id)
+    const nextVotesCount = Math.max(
+      0,
+      currentItem.votes_count + (existingVoteId ? -1 : 1)
+    )
+    await pb.collection('feedback_items').update(item.id, {
+      votes_count: nextVotesCount,
+    })
     await loadBoard()
   } catch (err) {
+    const detail = err?.response?.message || err?.message || 'Tundmatu viga'
+    voteError.value = `Hääletamine ebaõnnestus: ${detail}`
     console.error(err)
   }
 }
@@ -113,6 +126,7 @@ onMounted(loadBoard)
   </section>
 
   <p v-if="loadError" class="form-error">{{ loadError }}</p>
+  <p v-if="voteError" class="form-error">{{ voteError }}</p>
   <p v-else-if="loading" class="empty-state">Laen ideid...</p>
 
   <div v-else class="ballot">

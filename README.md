@@ -53,7 +53,7 @@ Collections (kasutajate collection `users` on juba olemas vaikimisi):
 **API Rules:**
 - List/View: tühi (avalik lugemine)
 - Create: `@request.auth.id != ""`
-- Update: `@request.auth.id = author.id`
+- Update: `@request.auth.id != "" && @request.body.title:changed = false && @request.body.description:changed = false && @request.body.author:changed = false && @request.body.votes_count:changed = true`
 - Delete: `@request.auth.id = author.id`
 
 ### `votes`
@@ -89,11 +89,16 @@ callback URL-iga OAuth teenustes registreerisid. OAuth ei tööta ainult
 frontendis nuppude lisamisega: providerid peavad olema PocketBase Admin
 UI-s aktiveeritud ja nende võtmed sisestatud.
 
-### `pb_hooks`
-Kopeeri `pb_hooks/vote_counter.pb.js` ja
-`pb_hooks/stripe_webhook.pb.js` PocketBase'i `pb_hooks` kausta
-(samal tasemel kui `pb_data`). PocketBase laeb need automaatselt
-käivitumisel — build-sammu pole vaja.
+### Hääletuse loendur Coolify's
+Kui PocketBase'i `pb_hooks` kausta ei saa faile lisada, uuendab frontend
+pärast hääle lisamist või eemaldamist `feedback_items.votes_count` välja
+PocketBase API kaudu. Selle jaoks peab `feedback_items` Update rule olema
+ülaltoodud reegel. `vote_counter.pb.js` ei tohi samal ajal töötada, muidu
+loendur suureneb kaks korda.
+
+`stripe_webhook.pb.js` vajab serveripoolset PocketBase hooki ja saab töötada
+ainult siis, kui Coolify lubab paigaldada faili PocketBase'i `pb_hooks`
+kausta.
 
 ## 5. Paigaldusjuhend (kohalik käivitamine)
 
