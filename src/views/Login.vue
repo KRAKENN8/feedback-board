@@ -10,13 +10,13 @@ const router = useRouter()
 const route = useRoute()
 
 async function handleSubmit() {
-  await loginWithPassword(email.value, password.value)
-  if (!error.value) router.push(route.query.redirect || { name: 'board' })
+  const loggedIn = await loginWithPassword(email.value, password.value)
+  if (loggedIn) router.push(route.query.redirect || { name: 'board' })
 }
 
 async function handleOAuth(provider) {
-  await loginWithOAuth(provider)
-  if (!error.value) router.push(route.query.redirect || { name: 'board' })
+  const loggedIn = await loginWithOAuth(provider)
+  if (loggedIn) router.push(route.query.redirect || { name: 'board' })
 }
 </script>
 

@@ -22,9 +22,10 @@ export function useAuth() {
         name,
       })
       await pb.collection('users').authWithPassword(email, password)
+      return true
     } catch (err) {
       error.value = err?.message || 'Registreerimine ebaõnnestus.'
-      throw err
+      return false
     }
   }
 
@@ -32,22 +33,28 @@ export function useAuth() {
     error.value = ''
     try {
       await pb.collection('users').authWithPassword(email, password)
+      return true
     } catch (err) {
       error.value = err?.message || 'Vale e-post või parool.'
-      throw err
+      return false
     }
   }
 
-  // Works for any OAuth2 provider enabled in the PocketBase admin UI
-  // (Settings -> Auth providers). We only wire up Google and GitHub
-  // in the UI, but the function itself is provider-agnostic.
+  // Google and GitHub must be enabled in PocketBase users collection options.
   async function loginWithOAuth(provider) {
     error.value = ''
     try {
+      const authMethods = await pb.collection('users').listAuthMethods()
+      if (!authMethods?.oauth2?.providers?.some((item) => item.name === provider)) {
+        throw new Error(
+          `OAuth provider "${provider}" is not enabled for the users collection in PocketBase.`
+        )
+      }
       await pb.collection('users').authWithOAuth2({ provider })
+      return true
     } catch (err) {
       error.value = err?.message || `${provider} sisselogimine ebaõnnestus.`
-      throw err
+      return false
     }
   }
 

@@ -76,10 +76,18 @@ Lisa olemasolevale `users` collectionile boolean väli `is_pro`
 (default `false`) — seda uuendab Stripe webhook pärast makset.
 
 ### Autentimine
-Settings → Auth providers: luba **Google** ja **GitHub** OAuth2
-(vajad kummagi teenuse OAuth klienti — Google Cloud Console /
-GitHub Developer Settings) ja lisa õige redirect URL
-(`https://<pocketbase-domeen>/api/oauth2-redirect`).
+Collection `users` → Options → OAuth2 providers: luba **Google** ja
+**GitHub** ning kopeeri kummagi teenuse Client ID ja Client Secret
+PocketBase'i. Registreeri Google Cloud Console'is ja GitHub Developer
+Settings'is PocketBase'i täpne callback URL:
+
+- kohalikult: `http://127.0.0.1:8090/api/oauth2-redirect`
+- tootmises: `https://<pocketbase-domeen>/api/oauth2-redirect`
+
+`VITE_POCKETBASE_URL` peab olema sama PocketBase'i avalik URL, mille
+callback URL-iga OAuth teenustes registreerisid. OAuth ei tööta ainult
+frontendis nuppude lisamisega: providerid peavad olema PocketBase Admin
+UI-s aktiveeritud ja nende võtmed sisestatud.
 
 ### `pb_hooks`
 Kopeeri `pb_hooks/vote_counter.pb.js` ja

@@ -10,13 +10,13 @@ const { error, registerWithPassword, loginWithOAuth } = useAuth()
 const router = useRouter()
 
 async function handleSubmit() {
-  await registerWithPassword(email.value, password.value, name.value)
-  if (!error.value) router.push({ name: 'board' })
+  const registered = await registerWithPassword(email.value, password.value, name.value)
+  if (registered) router.push({ name: 'board' })
 }
 
 async function handleOAuth(provider) {
-  await loginWithOAuth(provider)
-  if (!error.value) router.push({ name: 'board' })
+  const loggedIn = await loginWithOAuth(provider)
+  if (loggedIn) router.push({ name: 'board' })
 }
 </script>
 
