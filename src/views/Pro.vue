@@ -3,12 +3,17 @@ import { useAuth } from '../composables/useAuth'
 
 const { user } = useAuth()
 
-// Replace with your own Stripe Test Mode Payment Link.
-// client_reference_id lets the /webhooks/stripe hook know which
-// PocketBase user just paid.
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_XXXXXXXXXXXX'
+const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK
+const hasValidPaymentLink = Boolean(
+  STRIPE_PAYMENT_LINK &&
+  STRIPE_PAYMENT_LINK.startsWith('https://buy.stripe.com/') &&
+  !STRIPE_PAYMENT_LINK.includes('XXXXXXXX') &&
+  !STRIPE_PAYMENT_LINK.includes('your_payment_link')
+)
 
-const payUrl = `${STRIPE_PAYMENT_LINK}?client_reference_id=${user.value?.id}`
+const payUrl = hasValidPaymentLink
+  ? `${STRIPE_PAYMENT_LINK}${STRIPE_PAYMENT_LINK.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(user.value?.id || '')}`
+  : ''
 </script>
 
 <template>
@@ -18,11 +23,14 @@ const payUrl = `${STRIPE_PAYMENT_LINK}?client_reference_id=${user.value?.id}`
       Sul on juba PRO konto. Aitäh toetuse eest!
     </p>
     <template v-else>
+      <p v-if="!payUrl" class="form-error">
+        Stripe Payment Link ei ole seadistatud.
+      </p>
       <p style="color:#4a4a42">
         PRO kasutajad saavad märkida oma ideed prioriteetseks ja
         toetavad projekti arendust.
       </p>
-      <a :href="payUrl" class="btn-primary" style="display:block; text-decoration:none; box-sizing:border-box">
+      <a v-if="payUrl" :href="payUrl" class="btn-primary" style="display:block; text-decoration:none; box-sizing:border-box">
         Osta PRO (Stripe Test Mode)
       </a>
       <p style="font-size:0.8rem; color:#7a7a6e; margin-top:1rem">
