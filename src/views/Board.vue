@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { pb } from '../lib/pocketbase'
 import { useAuth } from '../composables/useAuth'
 
@@ -101,6 +101,10 @@ async function submitIdea() {
 }
 
 onMounted(loadBoard)
+
+watch(user, () => {
+  loadBoard()
+})
 </script>
 
 <template>
@@ -133,7 +137,7 @@ onMounted(loadBoard)
     <p v-if="items.length === 0" class="empty-state">Veel pole ühtegi ideed — ole esimene!</p>
 
     <div v-for="item in items" :key="item.id" class="ballot-row">
-      <div class="tally" :class="{ voted: !!myVoteIds[item.id] }">
+      <div class="tally" :class="{ voted: !!user && !!myVoteIds[item.id] }">
         <span class="tally-count">{{ item.votes_count }}</span>
         <button
           class="tally-arrow"
@@ -141,7 +145,7 @@ onMounted(loadBoard)
           :title="user ? (myVoteIds[item.id] ? 'Võta hääl tagasi' : 'Anna hääl') : 'Logi sisse, et hääletada'"
           @click="toggleVote(item)"
         >
-          {{ myVoteIds[item.id] ? '▼ tagasi' : '▲ hääleta' }}
+          {{ !user ? '▲ logi sisse' : (myVoteIds[item.id] ? '▼ tagasi' : '▲ hääleta') }}
         </button>
       </div>
       <div>
