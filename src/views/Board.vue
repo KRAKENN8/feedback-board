@@ -49,16 +49,13 @@ async function toggleVote(item) {
   try {
     if (existingVoteId) {
       await pb.collection('votes').delete(existingVoteId)
-      delete myVoteIds.value[item.id]
-      item.votes_count = Math.max(0, item.votes_count - 1)
     } else {
-      const vote = await pb.collection('votes').create({
+      await pb.collection('votes').create({
         item: item.id,
         user: user.value.id,
       })
-      myVoteIds.value[item.id] = vote.id
-      item.votes_count += 1
     }
+    await loadBoard()
   } catch (err) {
     console.error(err)
   }
