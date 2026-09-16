@@ -33,7 +33,9 @@ async function loadBoard() {
       myVoteIds.value = {}
     }
   } catch (err) {
-    loadError.value = 'Ideid ei õnnestunud laadida. Kontrolli PocketBase ühendust.'
+    const status = err?.status ? ` (${err.status})` : ''
+    const detail = err?.response?.message || err?.message || 'Tundmatu viga'
+    loadError.value = `Ideid ei õnnestunud laadida${status}: ${detail}`
     console.error(err)
   } finally {
     loading.value = false
