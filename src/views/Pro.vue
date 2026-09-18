@@ -28,7 +28,9 @@ const payUrl = hasValidPaymentLink
   ? `${STRIPE_PAYMENT_LINK}${STRIPE_PAYMENT_LINK.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(user.value?.id || '')}`
   : ''
 
-onMounted(refreshUser)
+onMounted(async () => {
+  await refreshUser()
+})
 </script>
 
 <template>
