@@ -1,7 +1,20 @@
 <script setup>
+import { onMounted } from 'vue'
 import { useAuth } from '../composables/useAuth'
+import { pb } from '../lib/pocketbase'
 
 const { user } = useAuth()
+
+async function refreshUser() {
+  if (!user.value || !pb.authStore.token) return
+
+  try {
+    const freshUser = await pb.collection('users').getOne(user.value.id)
+    pb.authStore.save(pb.authStore.token, freshUser)
+  } catch (err) {
+    console.error('Could not refresh the user profile.', err)
+  }
+}
 
 const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK
 const hasValidPaymentLink = Boolean(
@@ -14,6 +27,8 @@ const hasValidPaymentLink = Boolean(
 const payUrl = hasValidPaymentLink
   ? `${STRIPE_PAYMENT_LINK}${STRIPE_PAYMENT_LINK.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(user.value?.id || '')}`
   : ''
+
+onMounted(refreshUser)
 </script>
 
 <template>

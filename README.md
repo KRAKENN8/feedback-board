@@ -96,9 +96,23 @@ PocketBase API kaudu. Selle jaoks peab `feedback_items` Update rule olema
 ülaltoodud reegel. `vote_counter.pb.js` ei tohi samal ajal töötada, muidu
 loendur suureneb kaks korda.
 
-`stripe_webhook.pb.js` vajab serveripoolset PocketBase hooki ja saab töötada
-ainult siis, kui Coolify lubab paigaldada faili PocketBase'i `pb_hooks`
-kausta.
+### Stripe ilma Dockerita ja PocketBase'i failidele ligipääsuta
+Kui PocketBase töötab Coolify's eraldi teenusena ja `pb_hooks` kausta ei saa
+muuta, kasuta Stripe webhooki jaoks Pipedreami või Make'i HTTP workflow'd.
+Webhook peab pärast `checkout.session.completed` sündmust tegema PocketBase'i
+REST API kaudu järgmised toimingud:
+
+1. autentima PocketBase'i superuserina endpointil
+    `/api/collections/_superusers/auth-with-password`;
+2. взять `client_reference_id` Stripe Checkout Session-ist;
+3. teha `PATCH /api/collections/users/records/<client_reference_id>` koos
+    body `{ "is_pro": true }`;
+4. hoida PocketBase superuser email/password ainult Pipedream/Make secrets'is.
+
+Stripe webhook endpoint Pipedream/Make'is peab olema avalik. Stripe сам
+проверяет подпись события через свой trigger, а PocketBase получает только
+проверенный workflow-запрос. Не помещай PocketBase superuser credentials во
+frontend или в переменные с префиксом `VITE_`.
 
 ## 5. Paigaldusjuhend (kohalik käivitamine)
 
