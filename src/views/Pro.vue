@@ -55,12 +55,13 @@ const hasValidPaymentLink = Boolean(
   !STRIPE_PAYMENT_LINK.includes('your_payment_link')
 )
 
-// Build the return URL pointing back to /pro?payment=success
-const origin = typeof window !== 'undefined' ? window.location.origin : ''
-const returnUrl = `${origin}/pro?payment=success`
+// NOTE: Stripe Payment Links don't support redirect_url as a query
+// parameter. Configure the redirect in Stripe Dashboard instead:
+// Payment Link → After payment → Don't show confirmation page →
+// set URL to https://<your-domain>/pro?payment=success
 
 const payUrl = hasValidPaymentLink
-  ? `${STRIPE_PAYMENT_LINK}${STRIPE_PAYMENT_LINK.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(user.value?.id || '')}&redirect_url=${encodeURIComponent(returnUrl)}`
+  ? `${STRIPE_PAYMENT_LINK}${STRIPE_PAYMENT_LINK.includes('?') ? '&' : '?'}client_reference_id=${encodeURIComponent(user.value?.id || '')}`
   : ''
 
 onMounted(async () => {
