@@ -32,16 +32,10 @@
 // enough to demonstrate the pattern: webhook -> server-side DB update.
 
 routerAdd("POST", "/webhooks/stripe", (e) => {
-  let event
-  try {
-    event = JSON.parse(e.request.body)
-  } catch (err) {
-    return e.json(400, { error: "invalid payload" })
-  }
+  const event = e.requestInfo().body
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object
-    const userId = session.client_reference_id
+  if (event && event.type === "checkout.session.completed") {
+    const userId = event.data?.object?.client_reference_id
 
     if (userId) {
       try {
@@ -49,7 +43,8 @@ routerAdd("POST", "/webhooks/stripe", (e) => {
         user.set("is_pro", true)
         $app.save(user)
       } catch (err) {
-        console.log("Stripe webhook: could not find/update user", userId, err)
+        console.log("Stripe webhook: user update failed", userId, err)
+        return e.json(404, { error: "user update failed" })
       }
     }
   }

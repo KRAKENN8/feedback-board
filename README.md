@@ -68,7 +68,7 @@ kasutaja ei saaks ühe idee poolt kaks korda hääletada
 
 **API Rules:**
 - List/View: `@request.auth.id != "" && user = @request.auth.id`
-- Create: `@request.auth.id != "" && @request.auth.id = @request.data.user`
+- Create: `@request.auth.id != "" && @request.body.user = @request.auth.id`
 - Delete: `@request.auth.id = user.id`
 
 ### `users` collection — lisaväli
@@ -123,7 +123,7 @@ Collections on eelmise sammu järgi loodud.
 git clone <sinu-repo-url>
 cd feedback-board
 cp .env.example .env
-# ava .env ja pane VITE_POCKETBASE_URL oma PocketBase aadressiks
+# ava .env ja täida VITE_POCKETBASE_URL ning VITE_STRIPE_PAYMENT_LINK
 
 npm install
 npm run dev
@@ -131,14 +131,31 @@ npm run dev
 
 Rakendus jookseb vaikimisi aadressil `http://localhost:5173`.
 
-Kohaliku PocketBase käivitamiseks (kui testid ilma Coolify'ta):
+Kohaliku PocketBase käivitamiseks lae PocketBase binaar ja pane see
+projekti juurkausta. Hookid on juba projekti `pb_hooks` kaustas. Käivita
+PocketBase juurkaustast, et see leiaks automaatselt `pb_data` ja `pb_hooks`:
 
 ```bash
-./pocketbase serve
+./pocketbase serve --http=0.0.0.0:8090
 ```
 
-(lae PocketBase binaarfail pocketbase.io lehelt, pane
-`pb_hooks` kaust samasse kausta enne käivitamist).
+Windowsis:
+
+```powershell
+.\pocketbase.exe serve --http=0.0.0.0:8090
+```
+
+Seejärel ava Admin UI aadressil `http://127.0.0.1:8090/_/`.
+
+PocketBase peab töötama samast juurkaustast, kus asuvad:
+
+```text
+pocketbase(.exe)
+pb_data/
+pb_hooks/
+    stripe_webhook.pb.js
+    vote_counter.pb.js
+```
 
 ## 6. Keskkonnamuutujate nimekiri
 
@@ -147,6 +164,7 @@ Frontendi teenus (Coolify → Environment Variables):
 | Muutuja | Kirjeldus |
 |---|---|
 | `VITE_POCKETBASE_URL` | PocketBase teenuse avalik URL |
+| `VITE_STRIPE_PAYMENT_LINK` | Stripe Test Mode Payment Link URL |
 
 PocketBase teenus (kui kasutad Stripe webhooki):
 
